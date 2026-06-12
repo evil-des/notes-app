@@ -61,6 +61,7 @@ def test_note_create_update_and_archive_sync_reminders(client):
     try:
         reminders = db.query(NoteReminder).filter(NoteReminder.note_id == note_id).all()
         assert len(reminders) == 1
+        assert reminders[0].note_date.isoformat() == "2026-06-12"
         assert reminders[0].status == PENDING
         assert reminders[0].scheduled_for.replace(tzinfo=UTC) == datetime(
             2026, 6, 12, 6, 0, tzinfo=UTC
@@ -78,6 +79,7 @@ def test_note_create_update_and_archive_sync_reminders(client):
     try:
         reminders = db.query(NoteReminder).filter(NoteReminder.note_id == note_id).all()
         assert len(reminders) == 1
+        assert reminders[0].note_date.isoformat() == "2026-06-13"
         assert reminders[0].scheduled_for.replace(tzinfo=UTC) == datetime(
             2026, 6, 13, 6, 0, tzinfo=UTC
         )
@@ -141,6 +143,45 @@ def test_send_due_reminder_once(client):
         assert len(telegram.messages) == 1
         assert telegram.messages[0][1].startswith("Напоминание: today")
         assert db.query(NoteReminder).one().status == SENT
+    finally:
+        db.close()
+
+
+def test_time_change_does_not_resend_already_sent_note_date(client):
+    h = _auth(client)
+    client.post(
+        "/api/notes",
+        headers=h,
+        json={"title": "today", "content": "", "note_date": "2026-06-12"},
+    )
+
+    db = client.db_sessionmaker()
+    try:
+        user = db.query(User).one()
+        token = ensure_link_token(db, user)
+        bind_chat_by_start_token(db, token, "12345")
+        user.telegram_notifications_enabled = True
+        db.commit()
+
+        telegram = FakeTelegram()
+        now = datetime(2026, 6, 12, 10, 0, tzinfo=UTC)
+        assert send_due_reminders(db, telegram, now=now) == 1
+    finally:
+        db.close()
+
+    r = client.patch("/api/account/settings", headers=h, json={"reminder_time": "18:45"})
+    assert r.status_code == 200
+
+    db = client.db_sessionmaker()
+    try:
+        reminders = db.query(NoteReminder).all()
+        assert len(reminders) == 1
+        assert reminders[0].status == SENT
+
+        telegram = FakeTelegram()
+        later = datetime(2026, 6, 12, 20, 0, tzinfo=UTC)
+        assert send_due_reminders(db, telegram, now=later) == 0
+        assert telegram.messages == []
     finally:
         db.close()
 
