@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     jwt_secret: str
     jwt_expire_minutes: int = 60 * 24
     cors_origins: str = "http://localhost:5173"
+    telegram_bot_token: str = ""
+    telegram_bot_username: str = ""
+    reminder_worker_interval_seconds: int = 30
+    telegram_updates_interval_seconds: int = 5
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

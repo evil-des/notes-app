@@ -1,6 +1,111 @@
 {
   "components": {
     "schemas": {
+      "AccountSettingsOut": {
+        "properties": {
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "reminder_time": {
+            "title": "Reminder Time",
+            "type": "string"
+          },
+          "telegram_bot_configured": {
+            "title": "Telegram Bot Configured",
+            "type": "boolean"
+          },
+          "telegram_connect_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telegram Connect Url"
+          },
+          "telegram_connected": {
+            "title": "Telegram Connected",
+            "type": "boolean"
+          },
+          "telegram_notifications_enabled": {
+            "title": "Telegram Notifications Enabled",
+            "type": "boolean"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "telegram_connected",
+          "telegram_notifications_enabled",
+          "timezone",
+          "reminder_time",
+          "language",
+          "telegram_bot_configured"
+        ],
+        "title": "AccountSettingsOut",
+        "type": "object"
+      },
+      "AccountSettingsUpdate": {
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "reminder_time": {
+            "anyOf": [
+              {
+                "maxLength": 5,
+                "minLength": 5,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminder Time"
+          },
+          "telegram_notifications_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telegram Notifications Enabled"
+          },
+          "timezone": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timezone"
+          }
+        },
+        "title": "AccountSettingsUpdate",
+        "type": "object"
+      },
       "Body_login_api_auth_login_post": {
         "properties": {
           "client_id": {
@@ -308,6 +413,31 @@
         "title": "OkOut",
         "type": "object"
       },
+      "TelegramLinkOut": {
+        "properties": {
+          "telegram_bot_configured": {
+            "title": "Telegram Bot Configured",
+            "type": "boolean"
+          },
+          "telegram_connect_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telegram Connect Url"
+          }
+        },
+        "required": [
+          "telegram_connect_url",
+          "telegram_bot_configured"
+        ],
+        "title": "TelegramLinkOut",
+        "type": "object"
+      },
       "TokenOut": {
         "properties": {
           "access_token": {
@@ -498,6 +628,102 @@
           }
         ],
         "summary": "Change Password",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/account/settings": {
+      "get": {
+        "operationId": "get_settings_api_account_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Settings",
+        "tags": [
+          "account"
+        ]
+      },
+      "patch": {
+        "operationId": "update_settings_api_account_settings_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountSettingsUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Settings",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/account/telegram/link": {
+      "post": {
+        "operationId": "create_telegram_link_api_account_telegram_link_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TelegramLinkOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Create Telegram Link",
         "tags": [
           "account"
         ]

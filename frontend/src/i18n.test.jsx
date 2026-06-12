@@ -11,6 +11,7 @@ function Probe() {
       <span data-testid="lang">{lang}</span>
       <span data-testid="title">{t('auth.loginTitle')}</span>
       <span data-testid="count">{t('notes.deleteSelected', { count: 3 })}</span>
+      <span data-testid="telegram">{t('settings.telegramTitle')}</span>
       <button onClick={() => setLang('ru')}>switch</button>
     </div>
   );
@@ -25,6 +26,7 @@ describe('i18n', () => {
     );
     expect(screen.getByTestId('lang')).toHaveTextContent('en');
     expect(screen.getByTestId('title')).toHaveTextContent('Welcome back');
+    expect(screen.getByTestId('telegram')).toHaveTextContent('Telegram reminders');
   });
 
   it('interpolates {count} placeholders', () => {
@@ -46,6 +48,7 @@ describe('i18n', () => {
     await act(() => user.click(screen.getByText('switch')));
     expect(screen.getByTestId('lang')).toHaveTextContent('ru');
     expect(screen.getByTestId('title')).toHaveTextContent('С возвращением');
+    expect(screen.getByTestId('telegram')).toHaveTextContent('Telegram-напоминания');
     expect(localStorage.getItem('notes_lang')).toBe('ru');
   });
 });

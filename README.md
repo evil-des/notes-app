@@ -28,6 +28,22 @@ Demo credentials (after `make seed`):
 - **username:** `demo`
 - **password:** `demo1234`
 
+## Telegram reminders
+
+Telegram is optional for local development. Without a bot token the app, seed, tests, and
+worker still start; Telegram polling and message delivery are skipped.
+
+To try reminders locally, create a Telegram bot and set:
+
+```bash
+export TELEGRAM_BOT_TOKEN=123:abc
+export TELEGRAM_BOT_USERNAME=your_bot_username
+make up
+```
+
+Then open Settings, prepare the Telegram link, send `/start <token>` to the bot, and
+enable Telegram reminders.
+
 ## Common commands
 
 ```bash
@@ -42,4 +58,4 @@ make clean       # stop and wipe the database volume
 
 - `backend/` — FastAPI + SQLAlchemy + Alembic, talks to Postgres.
 - `frontend/` — React + Vite.
-- `docker-compose.yml` — db + backend + frontend.
+- `docker-compose.yml` — db + backend + reminder worker + frontend.

@@ -14,6 +14,7 @@ from ..schemas import (
     NoteOut,
     NotesPage,
 )
+from ..services.reminders import sync_note_reminder
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -111,6 +112,8 @@ def create_note(
         note_date=payload.note_date,
     )
     db.add(note)
+    db.flush()
+    sync_note_reminder(db, note, user)
     db.commit()
     db.refresh(note)
     return note
@@ -176,6 +179,7 @@ def update_note(
     note.content = payload.content
     note.tags = _normalize_tags(payload.tags)
     note.note_date = payload.note_date
+    sync_note_reminder(db, note, user)
     db.commit()
     db.refresh(note)
     return note
@@ -201,6 +205,7 @@ def archive_note(
     note = _own_note_or_404(note_id, user, db)
     if note.archived_at is None:
         note.archived_at = _now()
+        sync_note_reminder(db, note, user)
         db.commit()
         db.refresh(note)
     return note
@@ -215,6 +220,7 @@ def unarchive_note(
     note = _own_note_or_404(note_id, user, db)
     if note.archived_at is not None:
         note.archived_at = None
+        sync_note_reminder(db, note, user)
         db.commit()
         db.refresh(note)
     return note
