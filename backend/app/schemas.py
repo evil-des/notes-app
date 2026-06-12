@@ -64,5 +64,27 @@ class DeleteAccountIn(BaseModel):
     password: str
 
 
+class AccountSettingsOut(BaseModel):
+    telegram_connected: bool
+    telegram_notifications_enabled: bool
+    timezone: str
+    reminder_time: str
+    language: str
+    telegram_bot_configured: bool
+    telegram_connect_url: str | None = None
+
+
+class AccountSettingsUpdate(BaseModel):
+    telegram_notifications_enabled: bool | None = None
+    timezone: str | None = Field(default=None, min_length=1, max_length=64)
+    reminder_time: str | None = Field(default=None, min_length=5, max_length=5)
+    language: str | None = Field(default=None, min_length=2, max_length=2)
+
+
+class TelegramLinkOut(BaseModel):
+    telegram_connect_url: str | None
+    telegram_bot_configured: bool
+
+
 class OkOut(BaseModel):
     ok: bool = True
