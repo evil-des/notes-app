@@ -71,6 +71,10 @@ export const api = {
       method: 'POST',
       body: { current_password: currentPassword, new_password: newPassword },
     }),
+  getAccountSettings: () => request('/account/settings'),
+  updateAccountSettings: (data) =>
+    request('/account/settings', { method: 'PATCH', body: data }),
+  createTelegramLink: () => request('/account/telegram/link', { method: 'POST' }),
   deleteAccount: (password) =>
     request('/account', { method: 'DELETE', body: { password } }),
 };
