@@ -58,12 +58,31 @@ def scheduled_for_note_date(
 
 
 def sync_note_reminder(db: Session, note: Note, user: User) -> None:
+    if note.note_date is None:
+        db.query(NoteReminder).filter(
+            NoteReminder.note_id == note.id,
+            NoteReminder.status.in_([PENDING, FAILED]),
+        ).delete(synchronize_session=False)
+        return
+
     db.query(NoteReminder).filter(
         NoteReminder.note_id == note.id,
         NoteReminder.status.in_([PENDING, FAILED]),
     ).delete(synchronize_session=False)
 
-    if note.note_date is None or note.archived_at is not None:
+    sent_for_date = (
+        db.query(NoteReminder)
+        .filter(
+            NoteReminder.note_id == note.id,
+            NoteReminder.note_date == note.note_date,
+            NoteReminder.status == SENT,
+        )
+        .first()
+    )
+    if sent_for_date is not None:
+        return
+
+    if note.archived_at is not None:
         return
 
     scheduled_for = scheduled_for_note_date(
@@ -84,6 +103,7 @@ def sync_note_reminder(db: Session, note: Note, user: User) -> None:
             NoteReminder(
                 note_id=note.id,
                 user_id=user.id,
+                note_date=note.note_date,
                 scheduled_for=scheduled_for,
                 status=PENDING,
                 attempts=0,
