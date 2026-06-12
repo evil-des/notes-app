@@ -69,13 +69,12 @@ class Note(Base):
 
 class NoteReminder(Base):
     __tablename__ = "note_reminders"
-    __table_args__ = (
-        UniqueConstraint("note_id", "scheduled_for", name="uq_note_reminders_note_scheduled"),
-    )
+    __table_args__ = (UniqueConstraint("note_id", "note_date", name="uq_note_reminders_note_date"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     note_id: Mapped[int] = mapped_column(ForeignKey("notes.id", ondelete="CASCADE"), index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    note_date: Mapped[date] = mapped_column(Date, index=True)
     scheduled_for: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
