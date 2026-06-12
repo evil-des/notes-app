@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { AUTH_CHANGED_EVENT, getToken } from './auth.js';
 
 const STORAGE_KEY = 'notes_lang';
 export const LANGS = ['en', 'ru'];
@@ -83,6 +84,17 @@ const MESSAGES = {
       newPassword: 'New password',
       submit: 'Update password',
       passwordChanged: 'Password updated.',
+      telegramTitle: 'Telegram reminders',
+      telegramConnected: 'Telegram is connected.',
+      telegramDisconnected: 'Connect Telegram to receive reminders when a note date arrives.',
+      telegramBotNotConfigured: 'Telegram bot is not configured for this environment.',
+      connectTelegram: 'Open Telegram',
+      prepareTelegramLink: 'Connect',
+      enableTelegramNotifications: 'Enable Telegram reminders',
+      timezone: 'Timezone',
+      reminderTime: 'Notification time',
+      saveNotificationSettings: 'Save',
+      notificationSettingsSaved: 'Notification settings saved.',
       dangerZone: 'Danger zone',
       deleteAccountTitle: 'Delete account',
       deleteAccountHint: 'This permanently removes your account and all your notes.',
@@ -179,6 +191,17 @@ const MESSAGES = {
       newPassword: 'Новый пароль',
       submit: 'Обновить пароль',
       passwordChanged: 'Пароль обновлён.',
+      telegramTitle: 'Telegram-напоминания',
+      telegramConnected: 'Telegram подключён.',
+      telegramDisconnected: 'Подключите Telegram, чтобы получать напоминания при наступлении даты заметки.',
+      telegramBotNotConfigured: 'Telegram-бот не настроен для этого окружения.',
+      connectTelegram: 'Открыть Telegram',
+      prepareTelegramLink: 'Подключить',
+      enableTelegramNotifications: 'Включить Telegram-напоминания',
+      timezone: 'Часовой пояс',
+      reminderTime: 'Время уведомления',
+      saveNotificationSettings: 'Сохранить',
+      notificationSettingsSaved: 'Настройки уведомлений сохранены.',
       dangerZone: 'Опасная зона',
       deleteAccountTitle: 'Удалить аккаунт',
       deleteAccountHint: 'Это безвозвратно удалит ваш аккаунт и все ваши заметки.',
@@ -233,7 +256,36 @@ export function LangProvider({ children }) {
     document.documentElement.setAttribute('lang', lang);
   }, [lang]);
 
-  const setLang = (next) => {
+  useEffect(() => {
+    let alive = true;
+    const syncLanguageFromServer = () => {
+      const token = getToken();
+      if (!token) return;
+      fetch('/api/account/settings', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!alive || !LANGS.includes(data?.language)) return;
+          setLangState(data.language);
+          try {
+            localStorage.setItem(STORAGE_KEY, data.language);
+          } catch {
+            // localStorage may be unavailable; continue in-memory.
+          }
+        })
+        .catch(() => {});
+    };
+    syncLanguageFromServer();
+    window.addEventListener(AUTH_CHANGED_EVENT, syncLanguageFromServer);
+    return () => {
+      alive = false;
+      window.removeEventListener(AUTH_CHANGED_EVENT, syncLanguageFromServer);
+    };
+  }, []);
+
+  const setLang = (next, { sync = true } = {}) => {
     if (!LANGS.includes(next)) return;
     try {
       localStorage.setItem(STORAGE_KEY, next);
@@ -241,6 +293,17 @@ export function LangProvider({ children }) {
       // localStorage may be unavailable; continue in-memory.
     }
     setLangState(next);
+    const token = getToken();
+    if (sync && token) {
+      fetch('/api/account/settings', {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ language: next }),
+      }).catch(() => {});
+    }
   };
 
   const t = (key, vars) => {
