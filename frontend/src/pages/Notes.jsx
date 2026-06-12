@@ -107,6 +107,30 @@ export default function Notes({ registerAction }) {
     }
   };
 
+  const onShare = async (note) => {
+    try {
+      const updated = await api.shareNote(note.id);
+      setSelected(updated);
+      await load(0, false);
+      return updated;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  const onUnshare = async (note) => {
+    try {
+      const updated = await api.unshareNote(note.id);
+      setSelected(updated);
+      await load(0, false);
+      return updated;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const toggleBulk = () => {
     setBulkMode((b) => !b);
     setSelectedIds(new Set());
@@ -229,6 +253,8 @@ export default function Notes({ registerAction }) {
             onDelete={onDelete}
             onPin={onPin}
             onArchive={onArchive}
+            onShare={onShare}
+            onUnshare={onUnshare}
           />
         ) : (
           <div className="empty-state">
