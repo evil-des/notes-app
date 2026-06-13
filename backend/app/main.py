@@ -27,4 +27,5 @@ def healthz():
 app.include_router(auth_router.router, prefix="/api")
 app.include_router(account_router.router, prefix="/api")
 app.include_router(notes_router.router, prefix="/api")
+app.include_router(notes_router.public_router, prefix="/api")
 app.include_router(tags_router.router, prefix="/api")

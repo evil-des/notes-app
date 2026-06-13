@@ -340,6 +340,29 @@
             ],
             "title": "Pinned At"
           },
+          "share_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Token"
+          },
+          "shared_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shared At"
+          },
           "tags": {
             "items": {
               "type": "string"
@@ -363,6 +386,8 @@
           "content",
           "tags",
           "note_date",
+          "share_token",
+          "shared_at",
           "archived_at",
           "pinned_at",
           "created_at",
@@ -411,6 +436,57 @@
           }
         },
         "title": "OkOut",
+        "type": "object"
+      },
+      "PublicNoteOut": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "note_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note Date"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "tags",
+          "note_date",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PublicNoteOut",
         "type": "object"
       },
       "TelegramLinkOut": {
@@ -1329,6 +1405,98 @@
         ]
       }
     },
+    "/api/notes/{note_id}/share": {
+      "delete": {
+        "operationId": "unshare_note_api_notes__note_id__share_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "title": "Note Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Unshare Note",
+        "tags": [
+          "notes"
+        ]
+      },
+      "post": {
+        "operationId": "share_note_api_notes__note_id__share_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "note_id",
+            "required": true,
+            "schema": {
+              "title": "Note Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Share Note",
+        "tags": [
+          "notes"
+        ]
+      }
+    },
     "/api/notes/{note_id}/unarchive": {
       "post": {
         "operationId": "unarchive_note_api_notes__note_id__unarchive_post",
@@ -1420,6 +1588,48 @@
         "summary": "Unpin Note",
         "tags": [
           "notes"
+        ]
+      }
+    },
+    "/api/shared-notes/{token}": {
+      "get": {
+        "operationId": "get_shared_note_api_shared_notes__token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicNoteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Shared Note",
+        "tags": [
+          "shared-notes"
         ]
       }
     },

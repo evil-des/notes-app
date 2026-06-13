@@ -8,12 +8,13 @@ function emptyNote() {
 }
 
 const NoteEditor = forwardRef(function NoteEditor(
-  { note, onSave, onCancel, onDelete, onPin, onArchive },
+  { note, onSave, onCancel, onDelete, onPin, onArchive, onShare, onUnshare },
   ref,
 ) {
   const { t } = useLang();
   const [draft, setDraft] = useState(emptyNote());
   const [tagsInput, setTagsInput] = useState('');
+  const [copyStatus, setCopyStatus] = useState('');
   const formRef = useRef(null);
   const contentRef = useRef(null);
 
@@ -25,6 +26,7 @@ const NoteEditor = forwardRef(function NoteEditor(
       setDraft(emptyNote());
       setTagsInput('');
     }
+    setCopyStatus('');
   }, [note]);
 
   useImperativeHandle(ref, () => ({
@@ -48,6 +50,19 @@ const NoteEditor = forwardRef(function NoteEditor(
   const isPersisted = Boolean(note);
   const isPinned = Boolean(draft.pinned_at);
   const isArchived = Boolean(draft.archived_at);
+  const shareUrl = note?.share_token
+    ? `${window.location.origin}/shared/${note.share_token}`
+    : '';
+
+  const copyShareUrl = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopyStatus(t('editor.shareCopied'));
+    } catch {
+      setCopyStatus(t('editor.shareCopyFailed'));
+    }
+  };
 
   return (
     <form ref={formRef} className="editor" onSubmit={submit}>
@@ -98,6 +113,30 @@ const NoteEditor = forwardRef(function NoteEditor(
           />
         </label>
       </div>
+      {isPersisted && (
+        <div className="share-panel">
+          <div>
+            <strong>{t('editor.shareTitle')}</strong>
+            <p>{note.share_token ? t('editor.shareEnabled') : t('editor.shareDisabled')}</p>
+          </div>
+          {note.share_token ? (
+            <>
+              <input readOnly value={shareUrl} aria-label={t('editor.shareUrl')} />
+              <button type="button" className="btn btn-ghost" onClick={copyShareUrl}>
+                {t('editor.shareCopy')}
+              </button>
+              <button type="button" className="btn btn-danger" onClick={() => onUnshare?.(note)}>
+                {t('editor.shareRevoke')}
+              </button>
+            </>
+          ) : (
+            <button type="button" className="btn btn-ghost" onClick={() => onShare?.(note)}>
+              {t('editor.shareEnable')}
+            </button>
+          )}
+          {copyStatus && <span className="share-status">{copyStatus}</span>}
+        </div>
+      )}
       <MarkdownToolbar textareaRef={contentRef} />
       <div className="split">
         <textarea

@@ -53,6 +53,7 @@ export const api = {
 
   listNotes: (params = {}) => request(`/notes${buildQuery(params)}`),
   getNote: (id) => request(`/notes/${id}`),
+  getSharedNote: (token) => request(`/shared-notes/${token}`),
   createNote: (data) => request('/notes', { method: 'POST', body: data }),
   updateNote: (id, data) => request(`/notes/${id}`, { method: 'PUT', body: data }),
   deleteNote: (id) => request(`/notes/${id}`, { method: 'DELETE' }),
@@ -62,6 +63,8 @@ export const api = {
   unarchiveNote: (id) => request(`/notes/${id}/unarchive`, { method: 'POST' }),
   pinNote: (id) => request(`/notes/${id}/pin`, { method: 'POST' }),
   unpinNote: (id) => request(`/notes/${id}/unpin`, { method: 'POST' }),
+  shareNote: (id) => request(`/notes/${id}/share`, { method: 'POST' }),
+  unshareNote: (id) => request(`/notes/${id}/share`, { method: 'DELETE' }),
 
   calendar: (year, month) => request(`/notes/calendar?year=${year}&month=${month}`),
   tags: () => request('/tags'),

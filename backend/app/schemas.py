@@ -32,8 +32,20 @@ class NoteOut(BaseModel):
     content: str
     tags: list[str]
     note_date: date | None
+    share_token: str | None
+    shared_at: datetime | None
     archived_at: datetime | None
     pinned_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PublicNoteOut(BaseModel):
+    title: str
+    content: str
+    tags: list[str]
+    note_date: date | None
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)

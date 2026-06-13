@@ -843,6 +843,89 @@ button:disabled,
 .flag-btn:hover { background: var(--surface-hover); color: var(--text); }
 .flag-btn.on { background: var(--accent-soft); color: var(--accent); border-color: rgba(91, 91, 245, 0.3); }
 
+.share-panel {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(220px, 2fr) auto auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.7rem 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.share-panel strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.share-panel p {
+  margin: 0.1rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+.share-panel input {
+  min-width: 0;
+  font-size: 0.84rem;
+}
+.share-status {
+  grid-column: 2 / -1;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* ============================== Shared note ============================== */
+.shared-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.shared-note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+.shared-note-head {
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.shared-note h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.7rem;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.shared-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+.shared-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+.shared-tags span {
+  padding: 0.12rem 0.5rem;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.shared-content {
+  min-height: 240px;
+  padding: 1rem 0 0;
+}
+.shared-muted {
+  margin: 0;
+  color: var(--text-muted);
+}
+
 /* ============================== Markdown toolbar ============================== */
 .md-toolbar {
   display: flex;
@@ -1031,5 +1114,7 @@ kbd {
     height: auto;
   }
   main { padding: 1rem; }
+  .share-panel { grid-template-columns: 1fr; }
+  .share-status { grid-column: 1; }
   .theme-label, .lang-label { display: none; }
 }

@@ -1,8 +1,10 @@
+import secrets
 from calendar import monthrange
 from datetime import UTC, date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import case, or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..deps import get_current_user, get_db
@@ -13,10 +15,12 @@ from ..schemas import (
     NoteIn,
     NoteOut,
     NotesPage,
+    PublicNoteOut,
 )
 from ..services.reminders import sync_note_reminder
 
 router = APIRouter(prefix="/notes", tags=["notes"])
+public_router = APIRouter(prefix="/shared-notes", tags=["shared-notes"])
 
 
 def _normalize_tags(tags: list[str]) -> list[str]:
@@ -39,6 +43,10 @@ def _own_note_or_404(note_id: int, user: User, db: Session) -> Note:
 
 def _now() -> datetime:
     return datetime.now(UTC)
+
+
+def _new_share_token() -> str:
+    return secrets.token_urlsafe(32)
 
 
 @router.get("", response_model=NotesPage)
@@ -165,6 +173,56 @@ def get_note(
     db: Session = Depends(get_db),
 ) -> Note:
     return _own_note_or_404(note_id, user, db)
+
+
+@router.post("/{note_id}/share", response_model=NoteOut)
+def share_note(
+    note_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Note:
+    note = _own_note_or_404(note_id, user, db)
+    if note.share_token is not None:
+        return note
+
+    for _ in range(3):
+        note.share_token = _new_share_token()
+        note.shared_at = _now()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            note = _own_note_or_404(note_id, user, db)
+            continue
+        db.refresh(note)
+        return note
+
+    raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "Could not create share link")
+
+
+@router.delete("/{note_id}/share", response_model=NoteOut)
+def unshare_note(
+    note_id: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Note:
+    note = _own_note_or_404(note_id, user, db)
+    note.share_token = None
+    note.shared_at = None
+    db.commit()
+    db.refresh(note)
+    return note
+
+
+@public_router.get("/{token}", response_model=PublicNoteOut)
+def get_shared_note(
+    token: str,
+    db: Session = Depends(get_db),
+) -> Note:
+    note = db.query(Note).filter(Note.share_token == token).first()
+    if note is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Note not found")
+    return note
 
 
 @router.put("/{note_id}", response_model=NoteOut)
